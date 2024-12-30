@@ -1,0 +1,57 @@
+-- Place this script inside a LocalScript in StarterPlayer -> StarterPlayerScripts
+
+-- ESP settings
+local ESP_Color = Color3.fromRGB(255, 0, 0)  -- Red color for ESP box
+local ESP_Size = 2  -- Size of the ESP box around items
+local ESP_TextSize = 14  -- Text size for labeling items
+
+-- Get the player's character
+local player = game.Players.LocalPlayer
+local camera = workspace.CurrentCamera
+
+-- Utility function to create ESP boxes
+local function createESP(part)
+    local espBox = Instance.new("BillboardGui")
+    espBox.Adornee = part
+    espBox.Size = UDim2.new(0, ESP_Size, 0, ESP_Size)
+    espBox.StudsOffset = Vector3.new(0, 3, 0)  -- Slightly above the part
+    
+    -- Text label to show part name
+    local label = Instance.new("TextLabel")
+    label.Text = part.Name
+    label.Size = UDim2.new(1, 0, 1, 0)
+    label.TextSize = ESP_TextSize
+    label.TextColor3 = ESP_Color
+    label.BackgroundTransparency = 1
+    label.Parent = espBox
+
+    espBox.Parent = player.PlayerGui  -- Attach ESP to player's GUI
+end
+
+-- Function to highlight doors and items
+local function highlightDoorsAndItems()
+    for _, object in pairs(workspace:GetDescendants()) do
+        if object:IsA("Part") and object.Name:match("Door") then  -- Identify door parts
+            createESP(object)
+        end
+        if object:IsA("Part") and object.Name:match("Item") then  -- Identify item parts
+            createESP(object)
+        end
+    end
+end
+
+-- Update ESP every frame
+game:GetService("RunService").Heartbeat:Connect(function()
+    highlightDoorsAndItems()
+end)
+
+-- Optional: Remove ESP when the player leaves the game
+player.AncestryChanged:Connect(function(_, parent)
+    if not parent then
+        for _, gui in pairs(player.PlayerGui:GetChildren()) do
+            if gui:IsA("BillboardGui") then
+                gui:Destroy()
+            end
+        end
+    end
+end)
